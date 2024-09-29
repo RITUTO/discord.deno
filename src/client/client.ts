@@ -50,10 +50,8 @@ export class Client {
       this.socket = socket
     };
 
-    // メッセージ受信時の処理
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      // ハートビートのタイミングが来たら、心拍メッセージを送信
       if (message.op === 10) {
         const heartbeatInterval = message.d.heartbeat_interval;
         setInterval(() => {
@@ -61,7 +59,6 @@ export class Client {
         }, heartbeatInterval);
       }
 
-      // メッセージイベント処理（例: "MESSAGE_CREATE" イベント）
       if (message.op === 0 && message.t === "MESSAGE_CREATE") {
         const content = message.d.content;
         if (content === "ping") {
