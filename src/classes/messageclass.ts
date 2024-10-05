@@ -2,6 +2,7 @@
 import { member } from "./member.ts";
 import { user } from "./user.ts";
 import {Client,EmbedBuilder} from "../index.ts"
+import { ActionRowBuilder } from "../index.ts";
 export class message{
     client:Client
     #clientclass:Client;
@@ -25,32 +26,52 @@ export class message{
         this.channel_id = messaged.channel_id
         this.id = messaged.id
     }
-    async reply(args: string | { content?: string; embeds?: EmbedBuilder[]|object[];  }){
+    async reply(args: string | { content?: string; embeds?: EmbedBuilder[] | object[]; components?: ActionRowBuilder | ActionRowBuilder[] | any[] }) {
       const message: any = {};
-
+    
       if (typeof args === 'string') {
         message.content = args;
         message.tts = false;
       } else {
         message.content = args.content;
         message.tts = false;
-          message.message_reference = {
-            message_id: this.id
-          };
-        
+        message.message_reference = {
+          message_id: this.id,
+        };
     
+
         if (args.embeds) {
-          if ( args.embeds instanceof EmbedBuilder) {
-          message.embeds = args.embeds.build()
-        }else{
-          message.embeds = args.embeds
+          if (args.embeds instanceof EmbedBuilder) {
+              message.embeds = [args.embeds.build()];
+            } else {
+                message.embeds = args.embeds; 
         }
+            }
+        if (args.components) {
+          if (Array.isArray(args.components)) {
+            message.components = args.components.map(component => {
+              if (component instanceof ActionRowBuilder) {
+                return component.build(); 
+              } else if (typeof component === 'object') {
+                return component;
+              }
+              return component;
+            });
+          } else if (args.components instanceof ActionRowBuilder) {
+            message.components = [args.components.build()]; 
+          } else if (typeof args.components === 'object') {
+            message.components = [args.components];
+          }
+        }
+        console.log(JSON.stringify(message))
+        await this.#clientclass.request(`channels/${this.channel_id}/messages`, {
+          method: "POST",
+          body: JSON.stringify(message),
+        });
       }
-          await this.#clientclass.request(`channels/${this.channel_id}/messages`, {
-            method: "POST",
-            body: JSON.stringify(message),
-          });
-        }
     }
+    
+    
+    
 
   }

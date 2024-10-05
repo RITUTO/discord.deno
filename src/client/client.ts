@@ -25,10 +25,8 @@ export class Client {
         ...options.headers,
       },
     });
-
     if (!response.ok) {
       console.error("Error in API request:", response.statusText);
-      throw new Error("Failed to make API request");
     }
 
     return await response.json();
@@ -43,7 +41,7 @@ export class Client {
         op: 2,
         d: {
           token: this.token,
-          intents: 513,  // 513はGUILD_MESSAGESとDIRECT_MESSAGES
+          intents: this.intents,  // 513はGUILD_MESSAGESとDIRECT_MESSAGES
           properties: {
             $os: "windows",
             $browser: "deno",

@@ -15,7 +15,7 @@ export class ChannelManager extends CachedManager<T>{
           const existing = this.cache.get(id);
           if (existing && !existing.partial) return existing;
         }
-        const data = await this.client.request(Routes.channel(id),{})
+        const data = await this.client.request(Routes.channel(id),{method: "GET",})
         return this._add(data);
       }
       // deno-lint-ignore no-explicit-any
