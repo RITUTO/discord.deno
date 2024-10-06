@@ -63,12 +63,12 @@ export class message{
             message.components = [args.components];
           }
         }
-        console.log(JSON.stringify(message))
-        await this.#clientclass.request(`channels/${this.channel_id}/messages`, {
-          method: "POST",
-          body: JSON.stringify(message),
-        });
+
       }
+      await this.#clientclass.request(`channels/${this.channel_id}/messages`, {
+        method: "POST",
+        body: JSON.stringify(message),
+      });
     }
     
     
