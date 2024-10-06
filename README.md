@@ -1,5 +1,5 @@
 # 導入方法<br>
-import {Client} from "https://deno.land/x/discordjs_deno@0.1/src/index.ts"
+import {Client} from "https://deno.land/x/discordjs_deno@0.16/src/index.ts"
 # サンプルコード<br>
 ```js
 import {Client,EmbedBuilder,ButtonBuilder,ActionRowBuilder} from "https://deno.land/x/discordjs_deno@0.1/src/index.ts"
