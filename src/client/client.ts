@@ -72,6 +72,14 @@ export class Client {
   //@ts-ignore
   this.events.push({name: eventname, fn});
   }
+  once<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void){
+  const runfunction = (data) => {
+    fn(data)
+    this.onceevents = this.onceevents.filter(f => String(f.fn) != String(runfunction))
+  }
+  //@ts-ignore
+  this.onceevents.push({name: eventname, runfunction});
+  }
   emit<K extends keyof Events>(eventName: K, eventData: any){
     this.events.forEach(e =>{
       if (e.name == eventName){
