@@ -1,10 +1,10 @@
 # 導入方法<br>
-import {Client} from "https://deno.land/x/discordjs_deno@0.16/src/index.ts"
+import {Client} from "https://deno.land/x/discordjs_deno@0.17/mod.ts"
 # サンプルコード<br>
 ```js
-import {Client,EmbedBuilder,ButtonBuilder,ActionRowBuilder} from "https://deno.land/x/discordjs_deno@0.1/src/index.ts"
+import {Client,EmbedBuilder,ButtonBuilder,ActionRowBuilder} from "https://deno.land/x/discordjs_deno@0.17/mod.ts"
 const client = new Client({Intents:["GUILDS","MESSAGE_CONTENT","GUILD_MESSAGES"]})
-client.on("ready", () =>{
+client.once("ready", () =>{
     console.log("botを起動しました")
 })
 client.on("messageCreate",(message) =>{
