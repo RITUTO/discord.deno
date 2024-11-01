@@ -21,7 +21,7 @@ export class ChannelManager extends CachedManager<T>{
       // deno-lint-ignore no-explicit-any
       _add(data:any) {
     
-        const channel = new Channel(data);
+        const channel = new Channel(data,client);
     
         if (!channel) {
           this.client.emit("Debug", `Failed to find guild, or unknown type for channel ${data.id} ${data.type}`);
