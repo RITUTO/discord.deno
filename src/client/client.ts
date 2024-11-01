@@ -4,12 +4,13 @@ import { ChannelManager } from './../manager/ChannelManager.ts';
 const gatewayUrl = "wss://gateway.discord.gg/?v=9&encoding=json";
 import { Events } from "../../types/events.d.ts";
 import {message} from "../classes/messageclass.ts"
-import { createIntents,Intents } from '../uitl/intent.ts';
+import { createIntents,Intents } from '../util/intent.ts';
 export class Client {
   intents:number
   token!: string;
   #socket!: WebSocket;
   events:{name:any,fn:(arg?:any) =>void}[]=[]
+  onceevents:{name:any,fn:(arg?:any) =>void}[]=[]
   channels:ChannelManager
   constructor(options:{Intents:(keyof typeof Intents)[]}) {
     this.intents = createIntents(options.Intents)
