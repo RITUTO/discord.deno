@@ -23,7 +23,7 @@ interface ActionRowData {
   type: 1;
   components: (ButtonData | any)[];
 }
-import { ButtonBuilder } from "../index.ts";
+import { ButtonBuilder } from "../../mod.ts";
 // アクション行ビルダー
 export class ActionRowBuilder {
   private components: (ButtonData | any)[] = [];

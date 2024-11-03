@@ -3,16 +3,17 @@ import { ChannelManager } from './../manager/ChannelManager.ts';
 // import { channel } from './classes/channel';
 const gatewayUrl = "wss://gateway.discord.gg/?v=9&encoding=json";
 import { Events } from "../../types/events.d.ts";
-import {message} from "../classes/messageclass.ts"
-import { createIntents,Intents } from '../util/intent.ts';
+import { message } from "../classes/messageclass.ts"
+import { createIntents, Intents } from '../util/intent.ts';
 export class Client {
-  intents:number
+  intents: number
   token!: string;
   #socket!: WebSocket;
-  events:{name:any,fn:(arg?:any) =>void}[]=[]
-  onceevents:{name:any,fn:(arg?:any) =>void}[]=[]
-  channels:ChannelManager
-  constructor(options:{Intents:(keyof typeof Intents)[]}) {
+  events: { name: any, fn: (arg?: any) => void }[] = []
+  onceevents: { name: any, fn: (arg?: any) => void }[] = []
+  channels: ChannelManager
+  partial: any;
+  constructor(options: { Intents: (keyof typeof Intents)[] }) {
     this.intents = createIntents(options.Intents)
     this.channels = new ChannelManager(this);
   }
@@ -36,7 +37,7 @@ export class Client {
     this.token = token;
     this.#socket = new WebSocket(gatewayUrl);
     this.#socket.onopen = () => {
-      this.emit("Debug",`Connected to Discord Gateway`)
+      this.emit("Debug", `Connected to Discord Gateway`)
       // Discordに認証メッセージを送信
       const identifyMessage = {
         op: 2,
@@ -51,7 +52,7 @@ export class Client {
         },
       };
       this.#socket.send(JSON.stringify(identifyMessage));
-    }; 
+    };
     this.#socket.onmessage = (event) => {
       const messagedata = JSON.parse(event.data);
       if (messagedata.op === 10) {
@@ -61,28 +62,34 @@ export class Client {
         }, heartbeatInterval);
       }
       if (messagedata.op === 0 && messagedata.t === "MESSAGE_CREATE") {
-        this.emit("messageCreate",new message(messagedata.d,this))
+        this.emit("messageCreate", new message(messagedata.d, this))
       }
-      if (messagedata.op === 0 && messagedata.t === "READY"){
-        this.emit("ready",undefined)
+      if (messagedata.op === 0 && messagedata.t === "GUILD_CREATE") {
+        messagedata.d.channels.some(async (c: { id: string; }) => {
+          await this.channels.fetch(c.id)
+        })
       }
+      if (messagedata.op === 0 && messagedata.t === "READY") {
+        this.emit("ready", this)
+      }
+
     };
   }
-  on<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void){
-  //@ts-ignore
-  this.events.push({name: eventname, fn});
+  on<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void) {
+    //@ts-ignore
+    this.events.push({ name: eventname, fn });
   }
-  once<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void){
-  const runfunction = (data) => {
-    fn(data)
-    this.onceevents = this.onceevents.filter(f => String(f.fn) != String(runfunction))
+  once<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void) {
+    const runfunction = (data: any) => {
+      fn(data)
+      this.onceevents = this.onceevents.filter(f => String(f.fn) != String(runfunction))
+    }
+    //@ts-ignore
+    this.onceevents.push({ name: eventname, runfunction });
   }
-  //@ts-ignore
-  this.onceevents.push({name: eventname, runfunction});
-  }
-  emit<K extends keyof Events>(eventName: K, eventData: any){
-    this.events.forEach(e =>{
-      if (e.name == eventName){
+  emit<K extends keyof Events>(eventName: K, eventData: any) {
+    this.events.forEach(e => {
+      if (e.name == eventName) {
         e.fn(eventData)
       }
     })

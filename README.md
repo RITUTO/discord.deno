@@ -1,11 +1,14 @@
 # 導入方法<br>
-import {Client} from "https://deno.land/x/discordjs_deno@0.17/mod.ts"
+import {Client} from "https://deno.land/x/discordjs_deno@0.18/mod.ts"
 # サンプルコード<br>
 ```js
 import {Client,EmbedBuilder,ButtonBuilder,ActionRowBuilder} from "https://deno.land/x/discordjs_deno@0.17/mod.ts"
 const client = new Client({Intents:["GUILDS","MESSAGE_CONTENT","GUILD_MESSAGES"]})
 client.once("ready", () =>{
     console.log("botを起動しました")
+    const ch = await c.channels.fetch("1289808121732006012");
+    if (!ch) return
+    ch.send("botを起動しました")
 })
 client.on("messageCreate",(message) =>{
    if (message.content == "test"){
