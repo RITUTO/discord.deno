@@ -1,10 +1,11 @@
 // deno-lint-ignore-file ban-ts-comment no-explicit-any
 import { ChannelManager } from './../manager/ChannelManager.ts';
-// import { channel } from './classes/channel';
+import { Routes } from "../util/roots.js";
 const gatewayUrl = "wss://gateway.discord.gg/?v=9&encoding=json";
 import { Events } from "../../types/events.d.ts";
 import { message } from "../classes/messageclass.ts"
 import { createIntents, Intents } from '../util/intent.ts';
+import { interaction } from '../classes/interaction.ts';
 export class Client {
   intents: number
   token!: string;
@@ -13,12 +14,37 @@ export class Client {
   onceevents: { name: any, fn: (arg?: any) => void }[] = []
   channels: ChannelManager
   partial: any;
+  application: {
+    commands: {
+      set: (data: any[], guildId?: string) => Promise<any>;
+    };
+  } 
   constructor(options: { Intents: (keyof typeof Intents)[] }) {
     this.intents = createIntents(options.Intents)
     this.channels = new ChannelManager(this);
+
+    this.application = {
+      commands: {
+        set: async (data: any[], guildId?: string) => {
+          // /applications/@me からアプリケーションIDを取得して Routes を利用
+          const app = await this.request('/applications/@me', { method: 'GET' });
+          const appId = app.id;
+          const route = guildId
+            ? Routes.applicationGuildCommands(appId, guildId)
+            : Routes.applicationCommands(appId);
+          // request は先頭スラッシュを許容する（上で正規化）
+          return await this.request(route, {
+            method: "PUT",
+            body: JSON.stringify(data)
+          });
+        }
+      }
+    }
   }
   async request(endpoint: string, options: RequestInit) {
-    const url = `https://discord.com/api/v10/${endpoint}`;
+    // endpoint が '/...' でも動くように正規化
+    const path = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = `https://discord.com/api/v10/${path}`;
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -28,11 +54,16 @@ export class Client {
       },
     });
     if (!response.ok) {
-      console.error("Error in API request:", response.statusText);
+      // エラーボディを出すようにして原因特定を容易にする
+      const text = await response.text();
+      console.error("Error in API request:", response.status, response.statusText, text);
+      // 可能なら呼び出し元で扱えるよう例外を投げる
+      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${text}`);    
     }
 
-    return await response.json();
-  }
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+      }
   login(token: string) {
     this.token = token;
     this.#socket = new WebSocket(gatewayUrl);
@@ -43,7 +74,7 @@ export class Client {
         op: 2,
         d: {
           token: this.token,
-          intents: this.intents,  // 513はGUILD_MESSAGESとDIRECT_MESSAGES
+          intents: this.intents,  
           properties: {
             $os: "windows",
             $browser: "deno",
@@ -72,7 +103,10 @@ export class Client {
       if (messagedata.op === 0 && messagedata.t === "READY") {
         this.emit("ready", this)
       }
-
+      if (messagedata.op === 0 && messagedata.t === "INTERACTION_CREATE") {
+        const intr = new interaction(messagedata.d, this);
+        this.emit("interactionCreate", intr);
+      }
     };
   }
   on<K extends keyof Events>(eventname: K, fn: (arg: Events[K]) => void) {
@@ -85,10 +119,15 @@ export class Client {
       this.onceevents = this.onceevents.filter(f => String(f.fn) != String(runfunction))
     }
     //@ts-ignore
-    this.onceevents.push({ name: eventname, runfunction });
+    this.onceevents.push({ name: eventname, fn:runfunction });
   }
   emit<K extends keyof Events>(eventName: K, eventData: any) {
     this.events.forEach(e => {
+      if (e.name == eventName) {
+        e.fn(eventData)
+      }
+    })
+    this.onceevents.forEach(e => {
       if (e.name == eventName) {
         e.fn(eventData)
       }

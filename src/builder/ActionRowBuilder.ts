@@ -26,7 +26,7 @@ interface ActionRowData {
 import { ButtonBuilder } from "../../mod.ts";
 // アクション行ビルダー
 export class ActionRowBuilder {
-  private components: (ButtonData | any)[] = [];
+  private components: any[] = [];
 
   // ButtonBuilder インスタンスも受け入れるように修正
   public addComponent(component: ButtonData | ButtonBuilder): this {
@@ -36,10 +36,19 @@ export class ActionRowBuilder {
     return this;
   }
 
+  public addComponents(...components: any[]) {
+    this.components.push(...components);
+    return this;
+  }
+
   public build(): ActionRowData {
     return {
       type: 1,
       components: this.components,
     };
+  }
+
+  public toJSON() {
+    return { type: 1, components: this.components.map(c => (typeof c.toJSON === "function" ? c.toJSON() : c)) };
   }
 }

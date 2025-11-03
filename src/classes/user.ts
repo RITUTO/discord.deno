@@ -19,6 +19,6 @@ export class user{
         this.system = userstructure.system;
         this.banner = userstructure.banner;
         this.email = userstructure.email;
-
+        
     }
 }

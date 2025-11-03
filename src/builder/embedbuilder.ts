@@ -21,29 +21,35 @@ interface EmbedAuthor {
     private author?: EmbedAuthor;
     private footer?: EmbedFooter;
     private fields: EmbedField[] = [];
-  
+    private data: Record<string, any> = {};
+
     public setTitle(title: string): this {
       this.title = title;
+      this.data.title = title;
       return this;
     }
   
     public setDescription(description: string): this {
       this.description = description;
+      this.data.description = description;
       return this;
     }
   
     public setAuthor(name: string, iconURL?: string, url?: string): this {
       this.author = { name, iconURL, url };
+      this.data.author = { name, iconURL, url };
       return this;
     }
   
     public setFooter(text: string, iconURL?: string): this {
       this.footer = { text, iconURL };
+      this.data.footer = { text, iconURL };
       return this;
     }
   
     public addField(name: string, value: string, inline: boolean = false): this {
       this.fields.push({ name, value, inline });
+      this.data.fields = this.fields;
       return this;
     }
   
@@ -56,5 +62,8 @@ interface EmbedAuthor {
         fields: this.fields,
       };
     }
+
+    public toJSON(): Record<string, unknown> {
+      return { ...this.data };
+    }
   }
-  

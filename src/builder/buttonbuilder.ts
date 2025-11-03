@@ -22,39 +22,44 @@ const stylenumber = {
     "Premium":6
 }
 export class ButtonBuilder {
-  private label?: string 
-  private style?: ButtonStyle 
-  private customId?: string;
-  private url?: string;
+  private data: Record<string, any> = {};
+
   constructor() {
   }
+
   public setStyle(style:ButtonStyle): this {
     //@ts-ignore
-    this.style = stylenumber[style];
+    this.data.style = stylenumber[style];
     return this;
   }
+
   public setLabel(label:string): this {
-    this.label = label;
+    this.data.label = label;
     return this;
 
   }
+
   public setCustomId(id: string): this {
-    this.customId = id;
+    this.data.custom_id = id;
     return this;
   }
 
   public setUrl(url: string): this {
-    this.url = url;
+    this.data.url = url;
     return this;
   }
 
   public build(): ButtonData {
     return {
       type: 2,
-      label: this.label,
-      style: this.style,
-      custom_id: this.customId,
-      url: this.style === 'LINK' ? this.url : undefined, // LINKスタイルの場合のみURLを含める
+      label: this.data.label,
+      style: this.data.style,
+      custom_id: this.data.custom_id,
+      url: this.data.style === 'LINK' ? this.data.url : undefined, // LINKスタイルの場合のみURLを含める
     };
+  }
+
+  public toJSON() {
+    return { type: 2, ...this.data }; // type 2 = BUTTON in Discord API
   }
 }
