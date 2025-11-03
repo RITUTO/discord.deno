@@ -1,6 +1,6 @@
 # 導入方法<br>
 
-import {Client} from "https://deno.land/x/discordjs_deno@0.20/mod.ts"
+import {Client} from "https://deno.land/x/discordjs_deno@1.2.0/mod.ts"
 
 # サンプルコード<br>
 
@@ -10,7 +10,7 @@ import {
     ButtonBuilder,
     Client,
     EmbedBuilder,
-} from "https://deno.land/x/discordjs_deno@0.18β/mod.ts";
+} from "https://deno.land/x/discordjs_deno@1.2.0/mod.ts";
 
 const client = new Client({
     Intents: ["GUILDS", "MESSAGE_CONTENT", "GUILD_MESSAGES"],
